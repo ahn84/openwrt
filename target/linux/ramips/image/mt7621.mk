@@ -1530,6 +1530,25 @@ define Device/xiaomi_redmi-router-ac2100
 endef
 TARGET_DEVICES += xiaomi_redmi-router-ac2100
 
+define Device/lancsnet_wifi_ac1200
+  $(Device/dsa-migration)
+  $(Device/uimage-lzma-loader)
+  DEVICE_VENDOR := Lancs Networks
+  DEVICE_MODEL := Wifi AC1200
+  KERNEL_SIZE := 4096k
+  IMAGE_SIZE := 50000k
+  DEVICE_PACKAGES += kmod-usb3 kmod-mt7615e kmod-mt7615-firmware
+  BLOCKSIZE := 128k
+  PAGESIZE := 2048
+  UBINIZE_OPTS := -E 5
+  IMAGES := sysupgrade.bin factory.bin kernel.bin rootfs.bin
+  IMAGE/kernel.bin := append-kernel
+  IMAGE/rootfs.bin := append-ubi | check-size
+  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+  IMAGE/factory.bin := append-kernel | pad-to $$$$(KERNEL_SIZE) | append-ubi | check-size
+endef
+TARGET_DEVICES += lancsnet_wifi_ac1200
+
 define Device/xiaoyu_xy-c5
   $(Device/dsa-migration)
   IMAGE_SIZE := 32448k

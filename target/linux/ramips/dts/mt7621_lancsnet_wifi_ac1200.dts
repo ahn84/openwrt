@@ -1,0 +1,152 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+
+#include "mt7621.dtsi"
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+
+/ {
+	compatible = "mediatek,mt7621-eval-board","ralink,mt7621-soc","lancsnet,wifi-ac1200";
+
+	aliases {
+		led-boot = &middle_led;
+		led-failsafe = &middle_led;
+		led-running = &middle_led;
+		led-upgrade = &middle_led;
+	};
+
+	chosen {
+		bootargs = "console=ttyS0,57600n8 rootfstype=ubifs ubi.mtd=4 ubi.mtd=5 ";
+	};
+	
+	keys {
+		compatible = "gpio-keys";
+
+		reset {
+			label = "reset";
+			gpios = <&gpio 15 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_RESTART>;
+		};
+	};
+	
+	leds {
+		compatible = "gpio-leds";
+		
+		
+		wifi24: sys_yellow {
+			label = "wifi:24";
+			gpios = <&gpio 13 GPIO_ACTIVE_LOW>;
+			linux,default-trigger = "timer";
+		};
+		
+		wifi5 {
+			label = "wifi:5";
+			gpios = <&gpio 14 GPIO_ACTIVE_LOW>;
+			linux,default-trigger = "timer";
+		};
+
+		middle_led: middle {
+			label = "blue:middle";
+			gpios = <&gpio 16 GPIO_ACTIVE_LOW>;
+			linux,default-trigger = "timer";
+		};
+		
+		led_internet_blue: internet_blue {
+			label = "blue:internet";
+			gpios = <&gpio 3 GPIO_ACTIVE_LOW>;
+		};
+
+		led_internet_red: internet_red {
+			label = "red:internet";
+			gpios = <&gpio 4 GPIO_ACTIVE_LOW>;
+		};
+				
+	};
+};
+
+&nand {
+	status = "okay";
+
+	   partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		
+		partition@0 {
+			label = "Bootloader";
+			reg = <0x0 0x80000>;
+			read-only;
+		};
+		
+		partition@80000 {
+			label = "Config";
+			reg = <0x80000 0x80000>;
+
+		};
+
+		factory: partition@100000 {
+			label = "Factory";
+			reg = <0x100000 0x40000>;
+		};
+
+		partition@140000 {
+			label = "kernel";
+			reg = <0x140000 0x400000>;
+		};
+
+		partition@540000 {
+			label = "ubi";
+			reg = <0x540000 0x5c00000>;
+		};
+		
+		partition@0x6140000 {
+			label = "ubi1";
+			reg = <0x6140000 0x0e40000>;
+		};
+	};
+
+};
+
+&pcie {
+	status = "okay";
+};
+
+&pcie0 {
+	mt76@0,0 {
+		compatible = "mediatek,mt76";
+		reg = <0x0000 0 0 0 0>;
+		mediatek,mtd-eeprom = <&factory 0x0000>;
+	};
+};
+
+&state_default {
+	gpio {
+		groups = "jtag" , "uart3", "wdt";
+		function = "gpio";
+	};
+};
+
+&switch0 {
+	ports {
+		port@2 {
+			status = "okay";
+			label = "eth1";
+			mtd-mac-address = <&factory 0xe006>;
+		};
+
+		port@4 {
+			status = "okay";
+			label = "lan2";
+			mtd-mac-address = <&factory 0xe000>;
+			mtd-mac-address-increment = <1>;
+		};
+
+		port@3 {
+			status = "okay";
+			label = "lan1";
+			mtd-mac-address = <&factory 0xe000>;
+		};
+	};
+};
+
